@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сапер (Minesweeper)</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --board-bg: #bdbdbd;
+            --cell-bg: #e0e0e0;
+            --cell-hover: #d0d0d0;
+            --cell-revealed: #ffffff;
+            --border-light: #ffffff;
+            --border-dark: #7b7b7b;
+            --primary-color: #4a90e2;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        select, button {
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #357abd;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .board {
+            display: grid;
+            background-color: var(--board-bg);
+            border: 4px solid var(--board-bg);
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            user-select: none;
+        }
+
+        .cell {
+            width: 30px;
+            height: 30px;
+            background-color: var(--cell-bg);
+            border-top: 3px solid var(--border-light);
+            border-left: 3px solid var(--border-light);
+            border-right: 3px solid var(--border-dark);
+            border-bottom: 3px solid var(--border-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+
+        .cell:hover:not(.revealed) {
+            background-color: var(--cell-hover);
+        }
+
+        .cell.revealed {
+            background-color: var(--cell-revealed);
+            border: 1px solid #ccc;
+            cursor: default;
+        }
+
+        .cell.mine {
+            background-color: #e74c3c;
+            border: 1px solid #c0392b;
+        }
+
+        .cell.flagged {
+            color: #e74c3c;
+        }
+
+        /* Цвета цифр */
+        .num-1 { color: #0000ff; }
+        .num-2 { color: #008000; }
+        .num-3 { color: #ff0000; }
+        .num-4 { color: #000080; }
+        .num-5 { color: #800000; }
+        .num-6 { color: #008080; }
+        .num-7 { color: #000000; }
+        .num-8 { color: #808080; }
+
+        .message {
+            margin-top: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            height: 30px;
+        }
+
+        .win { color: #27ae60; }
+        .lose { color: #c0392b; }
+
+    </style>
+</head>
+<body>
+
+    <h1>Сапер</h1>
+
+    <div class="controls">
+        <select id="difficulty">
+            <option value="easy">Легкий (9x9, 10 мин)</option>
+            <option value="medium" selected>Средний (16x16, 40 мин)</option>
+            <option value="hard">Сложный (30x16, 99 мин)</option>
+        </select>
+        <button onclick="initGame()">Новая игра</button>
+    </div>
+
+    <div class="game-info">
+        <span id="mines-count">💣 40</span>
+        <span id="timer">⏱️ 000</span>
+    </div>
+
+    <div id="board" class="board"></div>
+    <div id="message" class="message"></div>
+
+    <script>
+        const boardElement = document.getElementById('board');
+        const minesCountElement = document.getElementById('mines-count');
+        const timerElement = document.getElementById('timer');
+        const messageElement = document.getElementById('message');
+        const difficultySelect = document.getElementById('difficulty');
+
+        let rows = 16;
+        let cols = 16;
+        let mines = 40;
+        let grid = [];
+        let gameOver = false;
+        let flags = 0;
+        let seconds = 0;
+        let timerInterval = null;
+        let firstClick = true;
+
+        const difficulties = {
+            easy: { rows: 9, cols: 9, mines: 10 },
+            medium: { rows: 16, cols: 16, mines: 40 },
+            hard: { rows: 16, cols: 30, mines: 99 }
+        };
+
+        function initGame() {
+            // Сброс состояния
+            clearInterval(timerInterval);
+            seconds = 0;
+            timerElement.innerText = '⏱️ 000';
+            messageElement.innerText = '';
+            messageElement.className = 'message';
+            gameOver = false;
+            firstClick = true;
+            grid = [];
+            flags = 0;
+            
+            // Получение настроек сложности
+            const diff = difficulties[difficultySelect.value];
+            rows = diff.rows;
+            cols = diff.cols;
+            mines = diff.mines;
+
+            updateMinesCounter();
+
+            // Настройка сетки CSS
+            boardElement.style.gridTemplateColumns = `repeat(${cols}, 30px)`;
+            boardElement.style.gridTemplateRows = `repeat(${rows}, 30px)`;
+            boardElement.innerHTML = '';
+
+            // Создание ячеек
+            for (let r = 0; r < rows; r++) {
+                const row = [];
+                for (let c = 0; c < cols; c++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = r;
+                    cell.dataset.col = c;
+                    
+                    // Обработчики событий
+                    cell.addEventListener('click', handleClick);
+                    cell.addEventListener('contextmenu', handleRightClick);
+                    
+                    boardElement.appendChild(cell);
+                    row.push({
+                        element: cell,
+                        isMine: false,
+                        revealed: false,
+                        flagged: false,
+                        neighborMines: 0
+                    });
+                }
+                grid.push(row);
+            }
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                seconds++;
+                timerElement.innerText = `⏱️ ${seconds.toString().padStart(3, '0')}`;
+            }, 1000);
+        }
+
+        function placeMines(excludeRow, excludeCol) {
+            let minesPlaced = 0;
+            while (minesPlaced < mines) {
+                const r = Math.floor(Math.random() * rows);
+                const c = Math.floor(Math.random() * cols);
+
+                // Не ставим мину там, где кликнули первый раз, и где уже есть мина
+                if (!grid[r][c].isMine && (r !== excludeRow || c !== excludeCol)) {
+                    grid[r][c].isMine = true;
+                    minesPlaced++;
+                }
+            }
+
+            // Подсчет соседей
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (!grid[r][c].isMine) {
+                        let count = 0;
+                        getNeighbors(r, c).forEach(([nr, nc]) => {
+                            if (grid[nr][nc].isMine) count++;
+                        });
+                        grid[r][c].neighborMines = count;
+                    }
+                }
+            }
+        }
+
+        function getNeighbors(r, c) {
+            const neighbors = [];
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    if (i === 0 && j === 0) continue;
+                    const nr = r + i;
+                    const nc = c + j;
+                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                        neighbors.push([nr, nc]);
+                    }
+                }
+            }
+            return neighbors;
+        }
+
+        function handleClick(e) {
+            if (gameOver) return;
+            const r = parseInt(e.target.dataset.row);
+            const c = parseInt(e.target.dataset.col);
+            const cellData = grid[r][c];
+
+            if (cellData.flagged || cellData.revealed) return;
+
+            if (firstClick) {
+                firstClick = false;
+                placeMines(r, c);
+                startTimer();
+            }
+
+            if (cellData.isMine) {
+                gameOverLoss();
+            } else {
+                revealCell(r, c);
+                checkWin();
+            }
+        }
+
+        function handleRightClick(e) {
+            e.preventDefault();
+            if (gameOver) return;
+            
+            const r = parseInt(e.target.dataset.row);
+            const c = parseInt(e.target.dataset.col);
+            const cellData = grid[r][c];
+
+            if (cellData.revealed) return;
+
+            if (!cellData.flagged) {
+                cellData.flagged = true;
+                cellData.element.classList.add('flagged');
+                cellData.element.innerText = '🚩';
+                flags++;
+            } else {
+                cellData.flagged = false;
+                cellData.element.classList.remove('flagged');
+                cellData.element.innerText = '';
+                flags--;
+            }
+            updateMinesCounter();
+        }
+
+        function revealCell(r, c) {
+            const cellData = grid[r][c];
+            if (cellData.revealed || cellData.flagged) return;
+
+            cellData.revealed = true;
+            cellData.element.classList.add('revealed');
+
+            if (cellData.neighborMines > 0) {
+                cellData.element.innerText = cellData.neighborMines;
+                cellData.element.classList.add(`num-${cellData.neighborMines}`);
+            } else {
+                // Если 0 мин вокруг, открываем соседей (рекурсия)
+                const neighbors = getNeighbors(r, c);
+                neighbors.forEach(([nr, nc]) => {
+                    if (!grid[nr][nc].revealed) {
+                        revealCell(nr, nc);
+                    }
+                });
+            }
+        }
+
+        function updateMinesCounter() {
+            minesCountElement.innerText = `💣 ${mines - flags}`;
+        }
+
+        function gameOverLoss() {
+            gameOver = true;
+            clearInterval(timerInterval);
+            messageElement.innerText = '💥 Вы проиграли!';
+            messageElement.classList.add('lose');
+
+            // Показать все мины
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (grid[r][c].isMine) {
+                        grid[r][c].element.classList.add('mine');
+                        grid[r][c].element.innerText = '💣';
+                    }
+                }
+            }
+        }
+
+        function checkWin() {
+            let revealedCount = 0;
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (grid[r][c].revealed) revealedCount++;
+                }
+            }
+
+            if (revealedCount === (rows * cols) - mines) {
+                gameOver = true;
+                clearInterval(timerInterval);
+                messageElement.innerText = '🎉 Победа!';
+                messageElement.classList.add('win');
+                
+                // Автоматически ставим флаги на оставшиеся мины
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        if (grid[r][c].isMine && !grid[r][c].flagged) {
+                            grid[r][c].element.innerText = '🚩';
+                            grid[r][c].element.classList.add('flagged');
+                        }
+                    }
+                }
+                minesCountElement.innerText = '💣 0';
+            }
+        }
+
+        // Запуск игры при загрузке
+        initGame();
+
+    </script>
+</body>
+</html>
+</body>
+</html>

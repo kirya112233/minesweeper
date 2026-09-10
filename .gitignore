@@ -1,4 +1,4 @@
-node_modules/
+Nothing should be ignored based on the provided file changes. The only added file is `minesweeper.html`, which is a source code file and should not be ignored.node_modules/
 .next/
 dist/
 build/
