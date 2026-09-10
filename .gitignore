@@ -1,5 +1,1 @@
-Nothing should be ignored since only a single HTML file was modified and no build artifacts, dependencies, or temporary files were detected in the changes.node_modules/
-.next/
-dist/
-build/
-*.log
+Nothing should be ignored based on the provided file changes. The only modified file is `minesweeper.html`, which is a source code file and should not be added to .gitignore.

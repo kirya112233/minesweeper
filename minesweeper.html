@@ -3,205 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Сапер (Minesweeper)</title>
+    <title>Сапер Pro</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome для иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --board-bg: #2c3e50;
-            --cell-bg: #ecf0f1;
-            --cell-hover: #bdc3c7;
-            --cell-revealed: #ffffff;
-            --border-light: #ffffff;
-            --border-dark: #95a5a6;
-            --primary-color: #3498db;
-            --primary-hover: #2980b9;
-            --text-color: #2c3e50;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            --cell-shadow: inset 2px 2px 5px rgba(255, 255, 255, 0.7),
-                           inset -2px -2px 5px rgba(0, 0, 0, 0.1);
-            --cell-revealed-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+            --cell-size: 35px;
+            --cell-gap: 4px;
+            --board-bg: #bbada0;
+            --cell-covered: #e0e0e0;
+            --cell-revealed: #f0f0f0;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Roboto', sans-serif;
             background: var(--bg-gradient);
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 100vh;
             margin: 0;
-            color: var(--text-color);
-            padding: 20px;
-            box-sizing: border-box;
+            color: #333;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 100%;
+            backdrop-filter: blur(10px);
         }
 
         h1 {
-            margin-bottom: 25px;
-            color: #ffffff;
-            font-size: 3rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            letter-spacing: 2px;
-            animation: fadeInDown 0.8s ease-out;
+            font-family: 'Press Start 2P', cursive;
+            color: #4a4a4a;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 0px #ddd;
+            letter-spacing: -1px;
         }
 
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .controls-area {
+            margin-bottom: 1.5rem;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
         }
 
-        .controls {
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-            justify-content: center;
-            animation: fadeIn 1s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        select, button {
-            padding: 12px 20px;
-            font-size: 16px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        select {
-            background-color: #ffffff;
-            color: var(--text-color);
-            outline: none;
-        }
-
-        select:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .game-info {
+        .stats-bar {
             display: flex;
             justify-content: space-between;
-            width: 100%;
-            max-width: 500px;
-            margin-bottom: 15px;
-            font-weight: bold;
-            font-size: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 15px 25px;
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            animation: fadeIn 1.2s ease-out;
-        }
-
-        .game-info span {
-            display: flex;
             align-items: center;
-            gap: 8px;
-        }
-
-        .board {
-            display: grid;
-            background-color: var(--board-bg);
-            padding: 10px;
+            margin-bottom: 1rem;
+            font-weight: bold;
+            font-size: 1.1rem;
+            background: #fff;
+            padding: 0.8rem;
             border-radius: 10px;
-            box-shadow: var(--shadow);
-            user-select: none;
-            animation: zoomIn 0.5s ease-out;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
         }
 
-        @keyframes zoomIn {
-            from {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+        .stat-item i {
+            margin-right: 8px;
+        }
+
+        .mines-count { color: #dc3545; }
+        .timer { color: #0d6efd; font-family: 'Press Start 2P', cursive; font-size: 0.9rem; }
+
+        /* Сетка игры */
+        #board {
+            display: grid;
+            gap: var(--cell-gap);
+            background-color: #bbada0;
+            padding: var(--cell-gap);
+            border-radius: 8px;
+            margin: 0 auto;
+            user-select: none;
+            overflow: auto;
+            max-width: 90vw;
+            max-height: 70vh;
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.2);
         }
 
         .cell {
-            width: 35px;
-            height: 35px;
-            background: var(--cell-bg);
-            border: none;
+            width: var(--cell-size);
+            height: var(--cell-size);
+            background-color: var(--cell-covered);
+            border-radius: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 20px;
+            font-size: 1.2rem;
             cursor: pointer;
-            box-sizing: border-box;
-            border-radius: 4px;
-            box-shadow: var(--cell-shadow);
-            transition: all 0.15s ease;
-            margin: 1px;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 0 #bbb;
+            position: relative;
         }
 
-        .cell:hover:not(.revealed) {
-            background: var(--cell-hover);
-            transform: scale(1.05);
-            box-shadow: inset 2px 2px 5px rgba(255, 255, 255, 0.9),
-                        inset -2px -2px 5px rgba(0, 0, 0, 0.15);
+        .cell:hover:not(.revealed):not(.flagged) {
+            transform: translateY(-2px);
+            background-color: #ececec;
         }
 
         .cell:active:not(.revealed) {
-            transform: scale(0.95);
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #bbb;
         }
 
         .cell.revealed {
             background-color: var(--cell-revealed);
-            box-shadow: var(--cell-revealed-shadow);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
             cursor: default;
-            animation: reveal 0.2s ease-out;
+            animation: popIn 0.2s ease-out;
         }
 
-        @keyframes reveal {
-            from {
-                transform: scale(0.8);
-                opacity: 0;
-            }
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
+        .cell.flagged::before {
+            content: '\f024';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: #dc3545;
+            font-size: 1rem;
+            animation: plantFlag 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .cell.mine {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            animation: shake 0.5s ease-in-out;
+            background-color: #dc3545 !important;
+            color: white;
+            animation: shake 0.5s;
+        }
+        
+        .cell.mine::before {
+            content: '\f1e2';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+        }
+
+        .c-1 { color: #0d6efd; }
+        .c-2 { color: #198754; }
+        .c-3 { color: #dc3545; }
+        .c-4 { color: #6610f2; }
+        .c-5 { color: #d63384; }
+        .c-6 { color: #0dcaf0; }
+        .c-7 { color: #212529; }
+        .c-8 { color: #6c757d; }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes plantFlag {
+            0% { transform: scale(0) rotate(-45deg); }
+            100% { transform: scale(1) rotate(0deg); }
         }
 
         @keyframes shake {
@@ -210,351 +173,279 @@
             75% { transform: translateX(5px); }
         }
 
-        .cell.flagged {
-            animation: popIn 0.3s ease-out;
-        }
-
-        @keyframes popIn {
-            0% {
-                transform: scale(0);
-            }
-            50% {
-                transform: scale(1.2);
-            }
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        /* Цвета цифр */
-        .num-1 { color: #3498db; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
-        .num-2 { color: #27ae60; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
-        .num-3 { color: #e74c3c; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
-        .num-4 { color: #9b59b6; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
-        .num-5 { color: #e67e22; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
-        .num-6 { color: #1abc9c; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
-        .num-7 { color: #34495e; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
-        .num-8 { color: #7f8c8d; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
-
-        .message {
-            margin-top: 20px;
-            font-size: 24px;
-            font-weight: bold;
-            height: 40px;
-            padding: 10px 30px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: var(--shadow);
-            animation: slideUp 0.5s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .win { 
-            color: #27ae60;
-            background: linear-gradient(135deg, #d5f5e3 0%, #abebc6 100%) !important;
-        }
-        
-        .lose { 
-            color: #c0392b;
-            background: linear-gradient(135deg, #fadbd8 0%, #f5b7b1 100%) !important;
-        }
-
-        @media (max-width: 600px) {
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .cell {
-                width: 28px;
-                height: 28px;
-                font-size: 16px;
-            }
-            
-            .controls {
-                flex-direction: column;
-            }
-            
-            select, button {
-                width: 100%;
-                max-width: 300px;
-            }
+        @media (max-width: 576px) {
+            :root { --cell-size: 28px; }
+            h1 { font-size: 1.4rem; }
+            .game-container { padding: 1rem; width: 95%; }
         }
     </style>
 </head>
 <body>
 
-    <h1>Сапер</h1>
+<div class="container d-flex justify-content-center">
+    <div class="game-container">
+        <h1><i class="fas fa-bomb me-2"></i>Сапер Pro</h1>
+        
+        <div class="controls-area">
+            <div class="row g-2 align-items-center justify-content-center mb-3">
+                <div class="col-auto">
+                    <label for="difficulty" class="form-label visually-hidden">Сложность</label>
+                    <select class="form-select form-select-sm" id="difficulty">
+                        <option value="easy">Легкий (9x9)</option>
+                        <option value="medium" selected>Средний (16x16)</option>
+                        <option value="hard">Сложный (30x16)</option>
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-primary btn-sm" onclick="initGame()">
+                        <i class="fas fa-redo-alt me-1"></i> Новая игра
+                    </button>
+                </div>
+            </div>
 
-    <div class="controls">
-        <select id="difficulty">
-            <option value="easy">Легкий (9x9, 10 мин)</option>
-            <option value="medium" selected>Средний (16x16, 40 мин)</option>
-            <option value="hard">Сложный (30x16, 99 мин)</option>
-        </select>
-        <button onclick="initGame()">Новая игра</button>
+            <div class="stats-bar">
+                <div class="stat-item mines-count">
+                    <i class="fas fa-flag"></i> <span id="mines-left">0</span>
+                </div>
+                <div class="stat-item timer">
+                    <i class="fas fa-clock"></i> <span id="timer">000</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="board"></div>
     </div>
+</div>
 
-    <div class="game-info">
-        <span id="mines-count">💣 40</span>
-        <span id="timer">⏱️ 000</span>
-    </div>
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <div id="board" class="board"></div>
-    <div id="message" class="message"></div>
+<script>
+    const boardElement = document.getElementById('board');
+    const minesLeftElement = document.getElementById('mines-left');
+    const timerElement = document.getElementById('timer');
+    const difficultySelect = document.getElementById('difficulty');
 
-    <script>
-        const boardElement = document.getElementById('board');
-        const minesCountElement = document.getElementById('mines-count');
-        const timerElement = document.getElementById('timer');
-        const messageElement = document.getElementById('message');
-        const difficultySelect = document.getElementById('difficulty');
+    let width = 16;
+    let height = 16;
+    let bombCount = 40;
+    let flags = 0;
+    let squares = [];
+    let isGameOver = false;
+    let timer;
+    let timeElapsed = 0;
+    let isFirstClick = true;
 
-        let rows = 16;
-        let cols = 16;
-        let mines = 40;
-        let grid = [];
-        let gameOver = false;
-        let flags = 0;
-        let seconds = 0;
-        let timerInterval = null;
-        let firstClick = true;
+    const difficulties = {
+        easy: { w: 9, h: 9, b: 10 },
+        medium: { w: 16, h: 16, b: 40 },
+        hard: { w: 30, h: 16, b: 99 }
+    };
 
-        const difficulties = {
-            easy: { rows: 9, cols: 9, mines: 10 },
-            medium: { rows: 16, cols: 16, mines: 40 },
-            hard: { rows: 16, cols: 30, mines: 99 }
-        };
+    function initGame() {
+        clearInterval(timer);
+        timer = null;
+        timeElapsed = 0;
+        timerElement.innerText = '000';
+        isGameOver = false;
+        isFirstClick = true;
+        flags = 0;
+        squares = [];
+        boardElement.innerHTML = '';
+        
+        const diff = difficulties[difficultySelect.value];
+        width = diff.w;
+        height = diff.h;
+        bombCount = diff.b;
+        
+        minesLeftElement.innerText = bombCount;
 
-        function initGame() {
-            // Сброс состояния
-            clearInterval(timerInterval);
-            seconds = 0;
-            timerElement.innerText = '⏱️ 000';
-            messageElement.innerText = '';
-            messageElement.className = 'message';
-            gameOver = false;
-            firstClick = true;
-            grid = [];
-            flags = 0;
+        boardElement.style.gridTemplateColumns = `repeat(${width}, var(--cell-size))`;
+        boardElement.style.gridTemplateRows = `repeat(${height}, var(--cell-size))`;
+
+        createBoard();
+    }
+
+    function startTimer() {
+        if (timer) return;
+        timer = setInterval(() => {
+            timeElapsed++;
+            timerElement.innerText = timeElapsed.toString().padStart(3, '0');
+        }, 1000);
+    }
+
+    function createBoard() {
+        for (let i = 0; i < width * height; i++) {
+            const square = document.createElement('div');
+            square.classList.add('cell');
+            square.setAttribute('id', i);
             
-            // Получение настроек сложности
-            const diff = difficulties[difficultySelect.value];
-            rows = diff.rows;
-            cols = diff.cols;
-            mines = diff.mines;
+            square.addEventListener('click', () => handleClick(square));
+            square.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                addFlag(square);
+            });
 
-            updateMinesCounter();
-
-            // Настройка сетки CSS
-            boardElement.style.gridTemplateColumns = `repeat(${cols}, 30px)`;
-            boardElement.style.gridTemplateRows = `repeat(${rows}, 30px)`;
-            boardElement.innerHTML = '';
-
-            // Создание ячеек
-            for (let r = 0; r < rows; r++) {
-                const row = [];
-                for (let c = 0; c < cols; c++) {
-                    const cell = document.createElement('div');
-                    cell.classList.add('cell');
-                    cell.dataset.row = r;
-                    cell.dataset.col = c;
-                    
-                    // Обработчики событий
-                    cell.addEventListener('click', handleClick);
-                    cell.addEventListener('contextmenu', handleRightClick);
-                    
-                    boardElement.appendChild(cell);
-                    row.push({
-                        element: cell,
-                        isMine: false,
-                        revealed: false,
-                        flagged: false,
-                        neighborMines: 0
-                    });
-                }
-                grid.push(row);
-            }
+            boardElement.appendChild(square);
+            squares.push(square);
         }
+    }
 
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                seconds++;
-                timerElement.innerText = `⏱️ ${seconds.toString().padStart(3, '0')}`;
-            }, 1000);
-        }
+    function placeMines(excludeIndex) {
+        const bombsArray = Array(bombCount).fill('bomb');
+        const emptyArray = Array(width * height - bombCount).fill('valid');
+        let gameArray = emptyArray.concat(bombsArray);
+        
+        do {
+            gameArray.sort(() => Math.random() - 0.5);
+        } while (gameArray[excludeIndex] === 'bomb');
 
-        function placeMines(excludeRow, excludeCol) {
-            let minesPlaced = 0;
-            while (minesPlaced < mines) {
-                const r = Math.floor(Math.random() * rows);
-                const c = Math.floor(Math.random() * cols);
+        for (let i = 0; i < squares.length; i++) {
+            squares[i].setAttribute('data-type', gameArray[i]);
+            if (gameArray[i] === 'valid') {
+                let total = 0;
+                const isLeftEdge = (i % width === 0);
+                const isRightEdge = (i % width === width - 1);
 
-                // Не ставим мину там, где кликнули первый раз, и где уже есть мина
-                if (!grid[r][c].isMine && (r !== excludeRow || c !== excludeCol)) {
-                    grid[r][c].isMine = true;
-                    minesPlaced++;
-                }
-            }
-
-            // Подсчет соседей
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    if (!grid[r][c].isMine) {
-                        let count = 0;
-                        getNeighbors(r, c).forEach(([nr, nc]) => {
-                            if (grid[nr][nc].isMine) count++;
-                        });
-                        grid[r][c].neighborMines = count;
-                    }
-                }
-            }
-        }
-
-        function getNeighbors(r, c) {
-            const neighbors = [];
-            for (let i = -1; i <= 1; i++) {
-                for (let j = -1; j <= 1; j++) {
-                    if (i === 0 && j === 0) continue;
-                    const nr = r + i;
-                    const nc = c + j;
-                    if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
-                        neighbors.push([nr, nc]);
-                    }
-                }
-            }
-            return neighbors;
-        }
-
-        function handleClick(e) {
-            if (gameOver) return;
-            const r = parseInt(e.target.dataset.row);
-            const c = parseInt(e.target.dataset.col);
-            const cellData = grid[r][c];
-
-            if (cellData.flagged || cellData.revealed) return;
-
-            if (firstClick) {
-                firstClick = false;
-                placeMines(r, c);
-                startTimer();
-            }
-
-            if (cellData.isMine) {
-                gameOverLoss();
-            } else {
-                revealCell(r, c);
-                checkWin();
-            }
-        }
-
-        function handleRightClick(e) {
-            e.preventDefault();
-            if (gameOver) return;
-            
-            const r = parseInt(e.target.dataset.row);
-            const c = parseInt(e.target.dataset.col);
-            const cellData = grid[r][c];
-
-            if (cellData.revealed) return;
-
-            if (!cellData.flagged) {
-                cellData.flagged = true;
-                cellData.element.classList.add('flagged');
-                cellData.element.innerText = '🚩';
-                flags++;
-            } else {
-                cellData.flagged = false;
-                cellData.element.classList.remove('flagged');
-                cellData.element.innerText = '';
-                flags--;
-            }
-            updateMinesCounter();
-        }
-
-        function revealCell(r, c) {
-            const cellData = grid[r][c];
-            if (cellData.revealed || cellData.flagged) return;
-
-            cellData.revealed = true;
-            cellData.element.classList.add('revealed');
-
-            if (cellData.neighborMines > 0) {
-                cellData.element.innerText = cellData.neighborMines;
-                cellData.element.classList.add(`num-${cellData.neighborMines}`);
-            } else {
-                // Если 0 мин вокруг, открываем соседей (рекурсия)
-                const neighbors = getNeighbors(r, c);
-                neighbors.forEach(([nr, nc]) => {
-                    if (!grid[nr][nc].revealed) {
-                        revealCell(nr, nc);
-                    }
-                });
-            }
-        }
-
-        function updateMinesCounter() {
-            minesCountElement.innerText = `💣 ${mines - flags}`;
-        }
-
-        function gameOverLoss() {
-            gameOver = true;
-            clearInterval(timerInterval);
-            messageElement.innerText = '💥 Вы проиграли!';
-            messageElement.classList.add('lose');
-
-            // Показать все мины
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    if (grid[r][c].isMine) {
-                        grid[r][c].element.classList.add('mine');
-                        grid[r][c].element.innerText = '💣';
-                    }
-                }
-            }
-        }
-
-        function checkWin() {
-            let revealedCount = 0;
-            for (let r = 0; r < rows; r++) {
-                for (let c = 0; c < cols; c++) {
-                    if (grid[r][c].revealed) revealedCount++;
-                }
-            }
-
-            if (revealedCount === (rows * cols) - mines) {
-                gameOver = true;
-                clearInterval(timerInterval);
-                messageElement.innerText = '🎉 Победа!';
-                messageElement.classList.add('win');
+                if (i > 0 && !isLeftEdge && gameArray[i - 1] === 'bomb') total++;
+                if (i > width - 1 && !isRightEdge && gameArray[i + 1 - width] === 'bomb') total++;
+                if (i > width && gameArray[i - width] === 'bomb') total++;
+                if (i > width + 1 && !isLeftEdge && gameArray[i - 1 - width] === 'bomb') total++;
+                if (i < width * height - 1 && !isRightEdge && gameArray[i + 1] === 'bomb') total++;
+                if (i < width * height - width + 1 && !isLeftEdge && gameArray[i - 1 + width] === 'bomb') total++;
+                if (i < width * height - width - 1 && !isRightEdge && gameArray[i + 1 + width] === 'bomb') total++;
+                if (i < width * height - width && gameArray[i + width] === 'bomb') total++;
                 
-                // Автоматически ставим флаги на оставшиеся мины
-                for (let r = 0; r < rows; r++) {
-                    for (let c = 0; c < cols; c++) {
-                        if (grid[r][c].isMine && !grid[r][c].flagged) {
-                            grid[r][c].element.innerText = '🚩';
-                            grid[r][c].element.classList.add('flagged');
-                        }
+                squares[i].setAttribute('data-total', total);
+            }
+        }
+    }
+
+    function addFlag(square) {
+        if (isGameOver) return;
+        if (!square.classList.contains('revealed')) {
+            if (!square.classList.contains('flagged')) {
+                if (flags < bombCount) {
+                    square.classList.add('flagged');
+                    flags++;
+                    minesLeftElement.innerText = bombCount - flags;
+                    checkForWin();
+                }
+            } else {
+                square.classList.remove('flagged');
+                flags--;
+                minesLeftElement.innerText = bombCount - flags;
+            }
+        }
+    }
+
+    function handleClick(square) {
+        if (isGameOver) return;
+        if (square.classList.contains('revealed') || square.classList.contains('flagged')) return;
+
+        if (isFirstClick) {
+            isFirstClick = false;
+            placeMines(parseInt(square.id));
+            startTimer();
+        }
+
+        if (square.getAttribute('data-type') === 'bomb') {
+            gameOver(square);
+        } else {
+            let total = square.getAttribute('data-total');
+            if (total != 0) {
+                square.classList.add('revealed');
+                square.classList.add(`c-${total}`);
+                square.innerText = total;
+                checkForWin();
+                return;
+            }
+            checkSquare(square, parseInt(square.id));
+        }
+        square.classList.add('revealed');
+        checkForWin();
+    }
+
+    function checkSquare(square, currentId) {
+        const isLeftEdge = (currentId % width === 0);
+        const isRightEdge = (currentId % width === width - 1);
+
+        setTimeout(() => {
+            if (currentId >= 0 && currentId < width * height) {
+                const newSquare = document.getElementById(currentId);
+                if (!newSquare.classList.contains('revealed') && !newSquare.classList.contains('flagged')) {
+                    newSquare.classList.add('revealed');
+                    let total = newSquare.getAttribute('data-total');
+                    if (total != 0) {
+                        newSquare.classList.add(`c-${total}`);
+                        newSquare.innerText = total;
+                    } else {
+                        if (!isLeftEdge && currentId > 0) checkSquare(newSquare, currentId - 1);
+                        if (!isRightEdge && currentId < width * height - 1) checkSquare(newSquare, currentId + 1);
+                        if (currentId >= width) checkSquare(newSquare, currentId - width);
+                        if (currentId < width * height - width) checkSquare(newSquare, currentId + width);
+                        if (!isLeftEdge && currentId > width - 1) checkSquare(newSquare, currentId - 1 - width);
+                        if (!isRightEdge && currentId > width + 1) checkSquare(newSquare, currentId + 1 - width);
+                        if (!isLeftEdge && currentId < width * height - width + 1) checkSquare(newSquare, currentId - 1 + width);
+                        if (!isRightEdge && currentId < width * height - width - 1) checkSquare(newSquare, currentId + 1 + width);
                     }
                 }
-                minesCountElement.innerText = '💣 0';
+            }
+        }, 10);
+    }
+
+    function gameOver(square) {
+        isGameOver = true;
+        clearInterval(timer);
+        
+        squares.forEach(sq => {
+            if (sq.getAttribute('data-type') === 'bomb') {
+                sq.classList.add('mine');
+            }
+        });
+
+        Swal.fire({
+            title: 'Бум!',
+            text: 'Вы подорвались на мине!',
+            icon: 'error',
+            confirmButtonText: 'Попробовать снова',
+            confirmButtonColor: '#dc3545',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                initGame();
+            }
+        });
+    }
+
+    function checkForWin() {
+        let revealedCount = 0;
+
+        for (let i = 0; i < squares.length; i++) {
+            if (squares[i].classList.contains('revealed')) {
+                revealedCount++;
             }
         }
 
-        // Запуск игры при загрузке
-        initGame();
+        const totalCells = width * height;
+        if (revealedCount === totalCells - bombCount) {
+            isGameOver = true;
+            clearInterval(timer);
+            Swal.fire({
+                title: 'Победа!',
+                text: `Вы нашли все мины за ${timeElapsed} сек!`,
+                icon: 'success',
+                confirmButtonText: 'Играть еще',
+                confirmButtonColor: '#198754'
+            }).then(() => {
+                initGame();
+            });
+        }
+    }
 
-    </script>
-</body>
-</html>
+    difficultySelect.addEventListener('change', initGame);
+    initGame();
+</script>
+
 </body>
 </html>
