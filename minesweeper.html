@@ -6,20 +6,25 @@
     <title>Сапер (Minesweeper)</title>
     <style>
         :root {
-            --bg-color: #f0f2f5;
-            --board-bg: #bdbdbd;
-            --cell-bg: #e0e0e0;
-            --cell-hover: #d0d0d0;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --board-bg: #2c3e50;
+            --cell-bg: #ecf0f1;
+            --cell-hover: #bdc3c7;
             --cell-revealed: #ffffff;
             --border-light: #ffffff;
-            --border-dark: #7b7b7b;
-            --primary-color: #4a90e2;
-            --text-color: #333;
+            --border-dark: #95a5a6;
+            --primary-color: #3498db;
+            --primary-hover: #2980b9;
+            --text-color: #2c3e50;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --cell-shadow: inset 2px 2px 5px rgba(255, 255, 255, 0.7),
+                           inset -2px -2px 5px rgba(0, 0, 0, 0.1);
+            --cell-revealed-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
+            background: var(--bg-gradient);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -27,115 +32,263 @@
             min-height: 100vh;
             margin: 0;
             color: var(--text-color);
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         h1 {
-            margin-bottom: 20px;
-            color: #2c3e50;
+            margin-bottom: 25px;
+            color: #ffffff;
+            font-size: 3rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .controls {
             margin-bottom: 20px;
             display: flex;
-            gap: 10px;
+            gap: 15px;
             align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         select, button {
-            padding: 10px 15px;
+            padding: 12px 20px;
             font-size: 16px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+            border-radius: 8px;
+            border: none;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        select {
+            background-color: #ffffff;
+            color: var(--text-color);
+            outline: none;
+        }
+
+        select:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
         button {
-            background-color: var(--primary-color);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border: none;
             font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         button:hover {
-            background-color: #357abd;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
         }
 
         .game-info {
             display: flex;
             justify-content: space-between;
             width: 100%;
-            max-width: 400px;
-            margin-bottom: 10px;
+            max-width: 500px;
+            margin-bottom: 15px;
             font-weight: bold;
-            font-size: 18px;
+            font-size: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            animation: fadeIn 1.2s ease-out;
+        }
+
+        .game-info span {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .board {
             display: grid;
             background-color: var(--board-bg);
-            border: 4px solid var(--board-bg);
-            border-radius: 4px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
             user-select: none;
+            animation: zoomIn 0.5s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .cell {
-            width: 30px;
-            height: 30px;
-            background-color: var(--cell-bg);
-            border-top: 3px solid var(--border-light);
-            border-left: 3px solid var(--border-light);
-            border-right: 3px solid var(--border-dark);
-            border-bottom: 3px solid var(--border-dark);
+            width: 35px;
+            height: 35px;
+            background: var(--cell-bg);
+            border: none;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 18px;
+            font-size: 20px;
             cursor: pointer;
             box-sizing: border-box;
+            border-radius: 4px;
+            box-shadow: var(--cell-shadow);
+            transition: all 0.15s ease;
+            margin: 1px;
         }
 
         .cell:hover:not(.revealed) {
-            background-color: var(--cell-hover);
+            background: var(--cell-hover);
+            transform: scale(1.05);
+            box-shadow: inset 2px 2px 5px rgba(255, 255, 255, 0.9),
+                        inset -2px -2px 5px rgba(0, 0, 0, 0.15);
+        }
+
+        .cell:active:not(.revealed) {
+            transform: scale(0.95);
         }
 
         .cell.revealed {
             background-color: var(--cell-revealed);
-            border: 1px solid #ccc;
+            box-shadow: var(--cell-revealed-shadow);
             cursor: default;
+            animation: reveal 0.2s ease-out;
+        }
+
+        @keyframes reveal {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         .cell.mine {
-            background-color: #e74c3c;
-            border: 1px solid #c0392b;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
         }
 
         .cell.flagged {
-            color: #e74c3c;
+            animation: popIn 0.3s ease-out;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
         }
 
         /* Цвета цифр */
-        .num-1 { color: #0000ff; }
-        .num-2 { color: #008000; }
-        .num-3 { color: #ff0000; }
-        .num-4 { color: #000080; }
-        .num-5 { color: #800000; }
-        .num-6 { color: #008080; }
-        .num-7 { color: #000000; }
-        .num-8 { color: #808080; }
+        .num-1 { color: #3498db; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        .num-2 { color: #27ae60; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        .num-3 { color: #e74c3c; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        .num-4 { color: #9b59b6; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        .num-5 { color: #e67e22; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        .num-6 { color: #1abc9c; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        .num-7 { color: #34495e; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        .num-8 { color: #7f8c8d; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
 
         .message {
-            margin-top: 15px;
-            font-size: 20px;
+            margin-top: 20px;
+            font-size: 24px;
             font-weight: bold;
-            height: 30px;
+            height: 40px;
+            padding: 10px 30px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: var(--shadow);
+            animation: slideUp 0.5s ease-out;
         }
 
-        .win { color: #27ae60; }
-        .lose { color: #c0392b; }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
+        .win { 
+            color: #27ae60;
+            background: linear-gradient(135deg, #d5f5e3 0%, #abebc6 100%) !important;
+        }
+        
+        .lose { 
+            color: #c0392b;
+            background: linear-gradient(135deg, #fadbd8 0%, #f5b7b1 100%) !important;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .cell {
+                width: 28px;
+                height: 28px;
+                font-size: 16px;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            select, button {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
     </style>
 </head>
 <body>
